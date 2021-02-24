@@ -1,0 +1,16 @@
+[package]
+name = "md-to-html"
+version = "0.1.0"
+authors = ["'Timo Freiberg' <'timo.freiberg@gmail.com'>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+eyre = "0.6"
+pulldown-cmark = "0.8"
+wasm-bindgen = "0.2"
+yew = "0.17"
