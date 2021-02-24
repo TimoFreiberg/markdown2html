@@ -1,5 +1,5 @@
 [package]
-name = "md-to-html"
+name = "md2html"
 version = "0.1.0"
 authors = ["'Timo Freiberg' <'timo.freiberg@gmail.com'>"]
 edition = "2018"

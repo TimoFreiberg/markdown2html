@@ -1,3 +1,9 @@
-# md-to-html
+# md2html
 
-Converts
+Converts markdown to html.
+Runs in the browser as WASM
+
+TODO:
+* Hosting
+* UI styling
+* CI/CD
