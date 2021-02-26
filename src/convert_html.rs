@@ -49,7 +49,7 @@ struct HtmlWriter<'a, 'msgs, I, W> {
     table_alignments: Vec<Alignment>,
     table_cell_index: usize,
     numbers: HashMap<CowStr<'a>, usize>,
-    msgs: &'msgs mut Vec<Msg>,
+    lints: &'msgs mut Vec<ConvertLint>,
 }
 
 impl<'a, 'msgs, I, W> HtmlWriter<'a, 'msgs, I, W>
@@ -57,7 +57,7 @@ where
     I: Iterator<Item = Event<'a>>,
     W: StrWrite,
 {
-    fn new(iter: I, writer: W, msgs: &'msgs mut Vec<Msg>) -> Self {
+    fn new(iter: I, writer: W, lints: &'msgs mut Vec<ConvertLint>) -> Self {
         Self {
             iter,
             writer,
@@ -66,12 +66,12 @@ where
             table_alignments: vec![],
             table_cell_index: 0,
             numbers: HashMap::new(),
-            msgs,
+            lints,
         }
     }
 
-    fn add_msg(&mut self, msg: Msg) {
-        self.msgs.push(msg);
+    fn add_lint(&mut self, lint: ConvertLint) {
+        self.lints.push(lint);
     }
 
     /// Writes a new line.
@@ -269,7 +269,7 @@ where
                 self.write("\">")
             }
             Tag::Image(_link_type, dest, title) => {
-                self.add_msg(Msg::Image {
+                self.add_lint(ConvertLint::Image {
                     title: title.to_string(),
                     dest: dest.to_string(),
                 });
@@ -424,25 +424,16 @@ where
 /// </ul>
 /// "#);
 /// ```
-pub fn push_html<'a, I>(s: &mut String, iter: I) -> Vec<String>
+pub(crate) fn push_html<'a, I>(s: &mut String, iter: I) -> Vec<ConvertLint>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    let mut msgs = Vec::new();
-    HtmlWriter::new(iter, s, &mut msgs).run().unwrap();
-    msgs.into_iter().map(Msg::to_string).collect()
+    let mut lints = Vec::new();
+    HtmlWriter::new(iter, s, &mut lints).run().unwrap();
+    lints
 }
 
-enum Msg {
+#[derive(Debug)]
+pub(crate) enum ConvertLint {
     Image { title: String, dest: String },
-}
-
-impl Msg {
-    fn to_string(self) -> String {
-        match self {
-            Msg::Image { title, dest } => {
-                format!("Image titled {:?} with link {:?}", title, dest)
-            }
-        }
-    }
 }

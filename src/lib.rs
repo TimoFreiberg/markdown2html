@@ -1,4 +1,6 @@
-use convert_html::push_html;
+#![feature(format_args_capture)]
+
+use convert_html::{push_html, ConvertLint};
 use wasm_bindgen::prelude::wasm_bindgen;
 use yew::{html, App, Component, ComponentLink, Html, InputData};
 
@@ -13,7 +15,7 @@ struct Model {
     link: ComponentLink<Self>,
     markdown_text: String,
     html_text: String,
-    msgs: Vec<String>,
+    lints: Vec<ConvertLint>,
 }
 
 enum Msg {
@@ -30,7 +32,7 @@ impl Component for Model {
             link,
             markdown_text: String::new(),
             html_text: String::new(),
-            msgs: Vec::new(),
+            lints: Vec::new(),
         }
     }
 
@@ -39,13 +41,13 @@ impl Component for Model {
             Msg::TextChanged { text } => {
                 self.markdown_text = text;
                 match convert(&self.markdown_text) {
-                    Ok((converted, msgs)) => {
+                    Ok((converted, lints)) => {
                         self.html_text = converted;
-                        self.msgs = msgs;
+                        self.lints = lints;
                     }
                     Err(e) => {
                         self.html_text = format!("Invalid Markdown: {}", e);
-                        self.msgs.clear();
+                        self.lints.clear();
                     }
                 }
             }
@@ -57,7 +59,7 @@ impl Component for Model {
         false
     }
 
-    fn view(&self) -> yew::Html {
+    fn view(&self) -> Html {
         let header = html! {
             <>
             <h1>{"md2html"}</h1>
@@ -84,12 +86,12 @@ impl Component for Model {
         } else {
             html! {}
         };
-        let msgs = if !self.msgs.is_empty() {
+        let msgs = if !self.lints.is_empty() {
             html! {
                 <div>
                     <p>{"You'll need to manually fix these issues:"}</p>
                     <ul>
-                        { self.msgs.iter().map(|li| html!{ <li> { li } </li>} ).collect::<Html>() }
+                        { self.lints.iter().map(|li| html!{ <li> { li.render() } </li>} ).collect::<Html>() }
                     </ul>
                 </div>
             }
@@ -107,7 +109,25 @@ impl Component for Model {
     }
 }
 
-pub fn convert(markdown: &str) -> eyre::Result<(String, Vec<String>)> {
+impl convert_html::ConvertLint {
+    fn render(&self) -> Html {
+        match self {
+            convert_html::ConvertLint::Image { title, dest } => {
+                let title = if title.is_empty() {
+                    String::new()
+                } else {
+                    format!("titled {:?}", title)
+                };
+                let msg = format!("Image {title} with link {dest:?}");
+                html! {
+                    { msg }
+                }
+            }
+        }
+    }
+}
+
+pub(crate) fn convert(markdown: &str) -> eyre::Result<(String, Vec<ConvertLint>)> {
     let parser = pulldown_cmark::Parser::new(markdown);
     let mut output = String::new();
     let msgs = push_html(&mut output, parser);
