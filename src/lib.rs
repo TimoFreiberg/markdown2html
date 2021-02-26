@@ -1,5 +1,8 @@
+use html::push_html;
 use wasm_bindgen::prelude::wasm_bindgen;
-use yew::{html, App, Component, ComponentLink, InputData};
+use yew::{App, Component, ComponentLink, InputData};
+
+mod html;
 
 #[wasm_bindgen(start)]
 pub fn run_app() {
@@ -47,7 +50,7 @@ impl Component for Model {
     }
 
     fn view(&self) -> yew::Html {
-        html! {
+        yew::html! {
             <div>
                 <textarea oninput=self.link.callback(|e: InputData| Msg::TextChanged {text: e.value})>
                 { &self.markdown_text }
@@ -63,6 +66,30 @@ impl Component for Model {
 pub fn convert(markdown: &str) -> eyre::Result<String> {
     let parser = pulldown_cmark::Parser::new(markdown);
     let mut output = String::new();
-    pulldown_cmark::html::push_html(&mut output, parser);
+    push_html(&mut output, parser);
+    let output = output.replace(r"<code>", "").replace("</code>", "");
     Ok(output)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn code_blocks_are_adjusted() {
+        let md = r"\
+```rust
+fn foo() {}
+"
+        .trim();
+        let html = r#"<pre class="lang:rust decode:true">fn foo() {}</pre>
+"#;
+        let converted = convert(md).unwrap();
+        assert!(
+            converted.contains(html),
+            "Expected {:?} to contain {:?}",
+            converted,
+            html
+        );
+    }
 }
