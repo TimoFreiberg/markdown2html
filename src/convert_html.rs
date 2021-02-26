@@ -12,7 +12,7 @@ enum TableState {
     Body,
 }
 
-struct HtmlWriter<'a, I, W> {
+struct HtmlWriter<'a, 'msgs, I, W> {
     /// Iterator supplying events.
     iter: I,
 
@@ -26,14 +26,15 @@ struct HtmlWriter<'a, I, W> {
     table_alignments: Vec<Alignment>,
     table_cell_index: usize,
     numbers: HashMap<CowStr<'a>, usize>,
+    msgs: &'msgs mut Vec<Msg>,
 }
 
-impl<'a, I, W> HtmlWriter<'a, I, W>
+impl<'a, 'msgs, I, W> HtmlWriter<'a, 'msgs, I, W>
 where
     I: Iterator<Item = Event<'a>>,
     W: StrWrite,
 {
-    fn new(iter: I, writer: W) -> Self {
+    fn new(iter: I, writer: W, msgs: &'msgs mut Vec<Msg>) -> Self {
         Self {
             iter,
             writer,
@@ -42,7 +43,12 @@ where
             table_alignments: vec![],
             table_cell_index: 0,
             numbers: HashMap::new(),
+            msgs,
         }
+    }
+
+    fn add_msg(&mut self, msg: Msg) {
+        self.msgs.push(msg);
     }
 
     /// Writes a new line.
@@ -240,6 +246,10 @@ where
                 self.write("\">")
             }
             Tag::Image(_link_type, dest, title) => {
+                self.add_msg(Msg::Image {
+                    title: title.to_string(),
+                    dest: dest.to_string(),
+                });
                 self.write("<img src=\"")?;
                 escape_href(&mut self.writer, &dest)?;
                 self.write("\" alt=\"")?;
@@ -391,9 +401,25 @@ where
 /// </ul>
 /// "#);
 /// ```
-pub fn push_html<'a, I>(s: &mut String, iter: I)
+pub fn push_html<'a, I>(s: &mut String, iter: I) -> Vec<String>
 where
     I: Iterator<Item = Event<'a>>,
 {
-    HtmlWriter::new(iter, s).run().unwrap();
+    let mut msgs = Vec::new();
+    HtmlWriter::new(iter, s, &mut msgs).run().unwrap();
+    msgs.into_iter().map(Msg::to_string).collect()
+}
+
+enum Msg {
+    Image { title: String, dest: String },
+}
+
+impl Msg {
+    fn to_string(self) -> String {
+        match self {
+            Msg::Image { title, dest } => {
+                format!("Image titled {:?} with link {:?}", title, dest)
+            }
+        }
+    }
 }

@@ -1,8 +1,8 @@
-use html::push_html;
+use convert_html::push_html;
 use wasm_bindgen::prelude::wasm_bindgen;
 use yew::{App, Component, ComponentLink, InputData};
 
-mod html;
+mod convert_html;
 
 #[wasm_bindgen(start)]
 pub fn run_app() {
