@@ -433,7 +433,7 @@ where
     lints
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub(crate) enum ConvertLint {
     Image { title: String, dest: String },
 }
