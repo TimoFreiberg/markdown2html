@@ -25,6 +25,35 @@ pub(crate) fn convert(markdown: &str) -> (String, Vec<ConvertLint>) {
 mod tests {
     use super::*;
 
+    trait Assertions {
+        fn html_should_contain(self, expected_html: &str) -> Self;
+        fn lints_should_contain(self, expected_lint: &ConvertLint) -> Self;
+    }
+
+    impl Assertions for (String, Vec<ConvertLint>) {
+        fn html_should_contain(self, expected_html: &str) -> Self {
+            let actual_html = &self.0;
+            assert!(
+                actual_html.contains(expected_html),
+                "Expected {:?} to contain {:?}",
+                actual_html,
+                expected_html
+            );
+            self
+        }
+
+        fn lints_should_contain(self, expected_lint: &ConvertLint) -> Self {
+            let lints = &self.1;
+            assert!(
+                lints.contains(&expected_lint),
+                "Expected {:?} to contain {:?}",
+                lints,
+                expected_lint
+            );
+            self
+        }
+    }
+
     #[test]
     fn code_blocks_are_adjusted() {
         let md = r"\
@@ -34,13 +63,8 @@ fn foo() {}
         .trim();
         let html = r#"<pre class="lang:rust decode:true">fn foo() {}</pre>
 "#;
-        let (converted, _) = convert(md);
-        assert!(
-            converted.contains(html),
-            "Expected {:?} to contain {:?}",
-            converted,
-            html
-        );
+
+        convert(md).html_should_contain(html);
     }
 
     #[test]
@@ -53,24 +77,29 @@ fn foo() {}
 <img src="path/to/image.svg" alt="image alt text" title="image title" />
 "#
         .trim();
-        let (converted, msgs) = convert(md);
-        assert!(
-            converted.contains(html),
-            "Expected {:?} to contain {:?}",
-            converted,
-            html
-        );
 
         let expected_lint = ConvertLint::Image {
             title: "image title".to_string(),
             dest: "path/to/image.svg".to_string(),
         };
 
-        assert!(
-            msgs.contains(&expected_lint),
-            "Expected {:?} to contain {:?}",
-            msgs,
-            expected_lint
-        );
+        convert(md)
+            .html_should_contain(html)
+            .lints_should_contain(&expected_lint);
+    }
+
+    #[test]
+    fn single_linebreaks_in_md_are_ignored() {
+        let md = r#"
+lorem ipsum
+dolor sit
+amet
+"#;
+        let html = r#"
+<p>lorem ipsum dolor sit amet</p>
+"#
+        .trim();
+
+        convert(&md).html_should_contain(&html);
     }
 }

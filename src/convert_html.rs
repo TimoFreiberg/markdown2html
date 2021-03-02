@@ -113,7 +113,8 @@ where
                     self.write(&html)?;
                 }
                 SoftBreak => {
-                    self.write_newline()?;
+                    // Wordpress falsely renders plain newlines inside <p>aragraphs, so I suppress those newlines
+                    self.write(" ")?;
                 }
                 HardBreak => {
                     self.write("<br />\n")?;
