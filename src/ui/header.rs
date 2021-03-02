@@ -22,8 +22,9 @@ impl Component for Header {
     fn view(&self) -> Html {
         html! {
             <>
-            <h1>{"md2html"}</h1>
-            <div>{"Converts your markdown to HTML that will be rendered properly in the NT blog!"}</div>
+            <h1>{"markdown2html"}</h1>
+            <div>{"Converts markdown to HTML that will be rendered properly in a Wordpress blog!"}</div>
+            <hr/>
             </>
         }
     }
