@@ -1,5 +1,6 @@
 #![feature(format_args_capture)]
 
+use pulldown_cmark::Options;
 use wasm_bindgen::prelude::wasm_bindgen;
 use yew::App;
 
@@ -15,7 +16,9 @@ pub fn run_app() {
 }
 
 pub(crate) fn convert(markdown: &str) -> (String, Vec<ConvertLint>) {
-    let parser = pulldown_cmark::Parser::new(markdown);
+    let mut options = Options::empty();
+    options.insert(Options::ENABLE_FOOTNOTES);
+    let parser = pulldown_cmark::Parser::new_ext(markdown, options);
     let mut output = String::new();
     let msgs = push_html(&mut output, parser);
     (output, msgs)
