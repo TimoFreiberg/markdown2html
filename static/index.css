@@ -1,0 +1,32 @@
+body {
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column;
+    max-width: unset;
+    height: 90vh;
+    text-align: center;
+}
+
+.header {
+    padding: 1rem;
+}
+
+.input-output-container {
+    display: flex;
+    flex-grow: 1;
+}
+
+.text-container {
+    padding: 1rem;
+    display: flex;
+    flex-grow: 1;
+}
+
+.text-container label {
+    flex-grow: inherit;
+}
+
+.text-container textarea {
+    height: 100%;
+    resize: none;
+}

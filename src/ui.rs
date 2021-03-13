@@ -57,8 +57,10 @@ impl Component for Model {
         html! {
             <>
                 <Header />
-                <Input oninput=self.link.callback(|e: Msg| e) />
-                <Output text=&self.html_text />
+                <div class="input-output-container">
+                    <Input oninput=self.link.callback(|e: Msg| e) />
+                    <Output text=&self.html_text />
+                </div>
                 <Lints lints=&self.lints />
             </>
         }

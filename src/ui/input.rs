@@ -32,9 +32,12 @@ impl Component for Input {
 
     fn view(&self) -> yew::Html {
         html! {
-            <label>{"Input markdown"}
-                <textarea oninput=self.link.callback(|e: InputData| Msg::TextChanged { text: e.value }) />
-            </label>
+            <div class="markdown-input text-container">
+                <label>
+                    <h2>{"Input markdown"}</h2>
+                    <textarea oninput=self.link.callback(|e: InputData| Msg::TextChanged { text: e.value }) />
+                </label>
+            </div>
         }
     }
 }

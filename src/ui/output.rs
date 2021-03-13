@@ -33,11 +33,15 @@ impl Component for Output {
 
     fn view(&self) -> yew::Html {
         html! {
-            <label>{"Generated HTML"}
-                <textarea readonly=true>
-                    { &self.props.text }
-                </textarea>
-            </label>
+            <div class="html-output text-container">
+                <label>
+                    <h2>{"Generated HTML"}</h2>
+                    // TODO replace readonly with disabled and introduce a copy-click-handler
+                    <textarea readonly=true>
+                        { &self.props.text }
+                    </textarea>
+                </label>
+            </div>
         }
     }
 }
