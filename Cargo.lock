@@ -329,6 +329,7 @@ dependencies = [
  "eyre",
  "pulldown-cmark",
  "wasm-bindgen",
+ "web-sys",
  "yew",
 ]
 

@@ -1,3 +1,4 @@
+use web_sys::window;
 use yew::{html, Component, ComponentLink, Properties};
 
 pub struct Output {
@@ -24,6 +25,11 @@ impl Component for Output {
 
     fn change(&mut self, props: Self::Properties) -> yew::ShouldRender {
         if props != self.props {
+            if let Some(window) = window() {
+                let clipboard = window.navigator().clipboard();
+                // FIXME deal with promise somehow
+                let _ = clipboard.write_text(&props.text);
+            }
             self.props = props;
             true
         } else {
@@ -35,9 +41,16 @@ impl Component for Output {
         html! {
             <div class="html-output text-container">
                 <label>
-                    <h2>{"Generated HTML"}</h2>
-                    // TODO replace readonly with disabled and introduce a copy-click-handler
-                    <textarea readonly=true>
+                    <h2>
+                    {
+                        if self.props.text.is_empty() {
+                            "Found nothing to generate yet"
+                        } else {
+                            "We copied this HTML to your clipboard"
+                        }
+                    }
+                    </h2>
+                    <textarea disabled=true>
                         { &self.props.text }
                     </textarea>
                 </label>

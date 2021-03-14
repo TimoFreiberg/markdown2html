@@ -1,6 +1,6 @@
-use yew::{html, Component, Html, Properties};
+use yew::{html, Component, Properties};
 
-use crate::convert_html::{self, ConvertLint};
+use crate::convert_html::ConvertLint;
 
 pub(crate) struct Lints {
     props: Props,
@@ -9,24 +9,6 @@ pub(crate) struct Lints {
 #[derive(Properties, Clone, PartialEq)]
 pub(crate) struct Props {
     pub lints: Vec<ConvertLint>,
-}
-
-impl convert_html::ConvertLint {
-    fn render(&self) -> Html {
-        match self {
-            convert_html::ConvertLint::Image { title, dest } => {
-                let title = if title.is_empty() {
-                    String::new()
-                } else {
-                    format!("titled {title:?}")
-                };
-                let msg = format!("Image {title} with link {dest:?}");
-                html! {
-                    { msg }
-                }
-            }
-        }
-    }
 }
 
 impl Component for Lints {
@@ -55,15 +37,9 @@ impl Component for Lints {
         if !self.props.lints.is_empty() {
             html! {
                 <div>
-                    <p>{"You'll need to manually fix these issues:"}</p>
-                    <ul>
-                        {
-                            self.props.lints
-                                .iter()
-                                .map(|li| html!{ <li> { li.render() } </li>} )
-                                .collect::<Html>()
-                        }
-                    </ul>
+                    <h2 class="lint">
+                        {format!("You'll need to manually fix {} image links", self.props.lints.len())}
+                    </h2>
                 </div>
             }
         } else {
